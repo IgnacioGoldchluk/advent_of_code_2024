@@ -14,7 +14,6 @@ defmodule AdventOfCode2024.Day1 do
   defp parse(input) do
     input
     |> String.split("\n")
-    |> Enum.filter(fn str -> str != "" end)
     |> Enum.map(&String.split(&1, ~r/\s+/))
     |> Enum.reduce({[], []}, fn [num1, num2], {acc1, acc2} ->
       {[String.to_integer(num1) | acc1], [String.to_integer(num2) | acc2]}
