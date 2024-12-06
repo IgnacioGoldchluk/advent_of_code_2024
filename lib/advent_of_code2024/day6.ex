@@ -96,6 +96,9 @@ defmodule AdventOfCode2024.Day6 do
         [{x, y} | grid]
       end
 
-    Enum.count(grids, fn grid -> loops?(start, :up, MapSet.new(), grid) end)
+    grids
+    |> Enum.map(fn g -> Task.async(fn -> loops?(start, :up, MapSet.new(), g) end) end)
+    |> Task.await_many(10_000)
+    |> Enum.count(& &1)
   end
 end
