@@ -88,15 +88,9 @@ defmodule AdventOfCode2024.Day6 do
 
   defp part1({start, {grid, size}}), do: Enum.count(move(start, :up, MapSet.new(), {grid, size}))
 
-  defp part2({start, {grid, {max_x, max_y}}}) do
-    grids =
-      for x <- 0..max_x,
-          y <- 0..max_y,
-          {x, y} != start and not Enum.member?(grid, {x, y}) do
-        [{x, y} | grid]
-      end
-
-    grids
+  defp part2({start, {grid, size}}) do
+    move(start, :up, MapSet.new(), {grid, size})
+    |> Enum.map(&[&1 | grid])
     |> Enum.map(fn g -> Task.async(fn -> loops?(start, :up, MapSet.new(), g) end) end)
     |> Task.await_many(10_000)
     |> Enum.count(& &1)
