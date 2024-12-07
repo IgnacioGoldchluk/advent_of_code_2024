@@ -27,17 +27,11 @@ defmodule AdventOfCode2024.Day7 do
   defp solvable?({_, []}, _), do: false
   defp solvable?({total, [h | t]}, ops), do: adds?(t, total, h, ops)
 
-  defp adds?(n, total, acc, ops) do
+  defp adds?(nums, total, acc, ops) do
     cond do
-      n == [] ->
-        total == acc
-
-      acc > total ->
-        false
-
-      true ->
-        [h | t] = n
-        Enum.any?(ops, fn op -> adds?(t, total, op.(h, acc), ops) end)
+      nums == [] -> total == acc
+      acc > total -> false
+      true -> Enum.any?(ops, fn op -> adds?(tl(nums), total, op.(hd(nums), acc), ops) end)
     end
   end
 end
