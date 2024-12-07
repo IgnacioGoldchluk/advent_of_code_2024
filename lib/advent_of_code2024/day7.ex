@@ -18,11 +18,8 @@ defmodule AdventOfCode2024.Day7 do
 
   defp concat(l, r), do: String.to_integer("#{r}#{l}")
 
-  defp part1_ops, do: [&Kernel.*/2, &Kernel.+/2]
-  defp part2_ops, do: [&Kernel.*/2, &Kernel.+/2, &concat/2]
-
-  defp part1(eqs), do: sum_solvable(eqs, part1_ops())
-  defp part2(eqs), do: sum_solvable(eqs, part2_ops())
+  defp part1(eqs), do: sum_solvable(eqs, [&Kernel.*/2, &Kernel.+/2])
+  defp part2(eqs), do: sum_solvable(eqs, [&Kernel.*/2, &Kernel.+/2, &concat/2])
 
   defp sum_solvable(eqs, ops),
     do: Enum.filter(eqs, &solvable?(&1, ops)) |> Enum.map(&elem(&1, 0)) |> Enum.sum()
