@@ -14,16 +14,13 @@ defmodule AdventOfCode2024.Day8 do
           into: %{},
           do: {{i, j}, char}
 
-    limits = grid |> Map.keys() |> Enum.max()
-
-    {Map.filter(grid, fn {_k, v} -> v != ?. end), limits}
+    {Map.filter(grid, fn {_k, v} -> v != ?. end), Map.keys(grid) |> Enum.max()}
   end
 
   defp within_limits?({x, y}, {max_x, max_y}), do: x >= 0 and x <= max_x and y >= 0 and y <= max_y
 
   defp antinodes(antennas, limits) when is_list(antennas) do
     combinations = for x <- antennas, y <- antennas, x != y, do: {x, y}
-
     Enum.flat_map(combinations, fn {a1, a2} -> antinodes(a1, a2, limits) end)
   end
 
@@ -31,13 +28,11 @@ defmodule AdventOfCode2024.Day8 do
     dx = x1 - x2
     dy = y1 - y2
 
-    [{x1 + dx, y1 + dy}, {x2 - dx, y2 - dy}]
-    |> Enum.filter(&within_limits?(&1, limits))
+    Enum.filter([{x1 + dx, y1 + dy}, {x2 - dx, y2 - dy}], &within_limits?(&1, limits))
   end
 
   defp antinodes2(antennas, limits) when is_list(antennas) do
     combinations = for x <- antennas, y <- antennas, x != y, do: {x, y}
-
     Enum.flat_map(combinations, fn {a1, a2} -> antinodes2(a1, a2, limits) end)
   end
 
@@ -49,32 +44,22 @@ defmodule AdventOfCode2024.Day8 do
     up_fn = fn {x, y} -> {x + mx, y + my} end
     dn_fn = fn {x, y} -> {x - mx, y - my} end
 
-    up = all_points(p1, limits, [], up_fn)
-    dn = all_points(p1, limits, [], dn_fn)
-
-    Enum.concat(up, dn) |> Enum.filter(&within_limits?(&1, limits))
+    [up_fn, dn_fn]
+    |> Enum.flat_map(&line(p1, limits, [], &1))
+    |> Enum.filter(&within_limits?(&1, limits))
   end
 
-  defp all_points({x, y} = p, {max_x, max_y} = limits, acc, next_fn) do
-    cond do
-      x < 0 or x > max_x or y < 0 or y > max_y -> acc
-      true -> all_points(next_fn.(p), limits, [p | acc], next_fn)
-    end
-  end
+  defp line({x, y}, {max_x, max_y}, acc, _) when x < 0 or y < 0 or x > max_x or y > max_y, do: acc
+  defp line(p, limits, acc, next), do: line(next.(p), limits, [p | acc], next)
 
-  defp part2({grid, limits}) do
+  defp unique_antinodes({grid, limits}, antinodes_fn) do
     grid
     |> Enum.group_by(&elem(&1, 1), &elem(&1, 0))
-    |> Enum.flat_map(fn {_k, antennas} -> antinodes2(antennas, limits) end)
+    |> Enum.flat_map(fn {_k, antennas} -> antinodes_fn.(antennas, limits) end)
     |> MapSet.new()
     |> MapSet.size()
   end
 
-  defp part1({grid, limits}) do
-    grid
-    |> Enum.group_by(&elem(&1, 1), &elem(&1, 0))
-    |> Enum.flat_map(fn {_k, antennas} -> antinodes(antennas, limits) end)
-    |> MapSet.new()
-    |> MapSet.size()
-  end
+  defp part2({grid, limits}), do: unique_antinodes({grid, limits}, &antinodes2/2)
+  defp part1({grid, limits}), do: unique_antinodes({grid, limits}, &antinodes/2)
 end
